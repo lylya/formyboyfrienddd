@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Heart Text Animation</title>
+
+		<style>
+			body {
+				margin: 0;
+				background: url("us.jpeg") no-repeat center center fixed;
+				background-size: cover;
+				overflow: hidden;
+				font-family: monospace;
+			}
+
+			canvas {
+				display: block;
+				background: transparent;
+			}
+		</style>
+	</head>
+
+	<body>
+		<canvas id="canvas"></canvas>
+
+		<!-- AUDIO -->
+		<audio id="music">
+			<source src="lagu.mp3" type="audio/mpeg" />
+		</audio>
+
+		<script>
+			// ================= AUDIO =================
+			const music = document.getElementById("music");
+
+			document.addEventListener(
+				"click",
+				() => {
+					music.volume = 1;
+					music.muted = false;
+
+					music
+						.play()
+						.then(() => console.log("Audio jalan ✅"))
+						.catch((err) => console.log("Error audio:", err));
+				},
+				{ once: true },
+			);
+
+			// ================= CANVAS =================
+			const canvas = document.getElementById("canvas");
+			const ctx = canvas.getContext("2d");
+
+			function resizeCanvas() {
+				canvas.width = window.innerWidth;
+				canvas.height = window.innerHeight;
+			}
+			resizeCanvas();
+			window.addEventListener("resize", resizeCanvas);
+
+			let particles = [];
+
+			// Fungsi hati
+			function heartFunction(t) {
+				let x = 16 * Math.pow(Math.sin(t), 3);
+				let y = -(
+					13 * Math.cos(t) -
+					5 * Math.cos(2 * t) -
+					2 * Math.cos(3 * t) -
+					Math.cos(4 * t)
+				);
+				return { x, y };
+			}
+
+			// Partikel rapi
+			let total = 200;
+
+			for (let i = 0; i < total; i++) {
+				let t = (i / total) * Math.PI * 2;
+				let pos = heartFunction(t);
+
+				particles.push({
+					x: pos.x,
+					y: pos.y,
+					// 🔥 ukuran teks responsive
+					size: Math.max(10, Math.min(window.innerWidth / 40, 18)),
+					alpha: Math.random() * 0.5 + 0.5,
+					speed: Math.random() * 0.01 + 0.005,
+					text: "i love you",
+				});
+			}
+
+			function animate() {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				// 🔥 scale otomatis sesuai layar
+				let scale = Math.min(canvas.width, canvas.height) / 40;
+
+				particles.forEach((p) => {
+					let drawX = canvas.width / 2 + p.x * scale;
+					let drawY = canvas.height / 2 + p.y * scale;
+
+					p.alpha += p.speed;
+					if (p.alpha > 1 || p.alpha < 0.4) p.speed *= -1;
+
+					ctx.fillStyle = `rgba(255,77,109,${p.alpha})`;
+					ctx.font = p.size + "px monospace";
+
+					ctx.shadowColor = "#ff4d6d";
+					ctx.shadowBlur = 8;
+
+					ctx.fillText(p.text, drawX, drawY);
+				});
+
+				requestAnimationFrame(animate);
+			}
+
+			animate();
+		</script>
+	</body>
+</html>
